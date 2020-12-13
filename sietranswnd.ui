@@ -18,6 +18,13 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
+       <widget class="QPushButton" name="btnLoadIn">
+        <property name="text">
+         <string>Laden...</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -31,9 +38,22 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="btnLoadIn">
+       <spacer name="horizontalSpacer_4">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnLoadTransFile">
         <property name="text">
-         <string>Laden...</string>
+         <string>Übersetzungsdatei laden...</string>
         </property>
        </widget>
       </item>
@@ -47,31 +67,18 @@
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>40</width>
+          <width>20</width>
           <height>20</height>
          </size>
         </property>
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="btnLoadTrans">
+       <widget class="QPushButton" name="btnLoadTransDir">
         <property name="text">
-         <string>Übersetzungen laden...</string>
+         <string>Übersetzungsverzeichnis laden...</string>
         </property>
        </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_4">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
       </item>
      </layout>
     </item>

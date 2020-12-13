@@ -2,10 +2,12 @@
 #define SIETRANSWND_H
 
 #include <QMainWindow>
+#include <QDir>
 
 namespace Ui { class SieTransWnd; }
 class TranslationModel;
 class QSortFilterProxyModel;
+class IExcelHandler;
 
 class SieTransWnd : public QMainWindow
 {
@@ -22,13 +24,17 @@ public slots:
 
 private slots:
     void on_btnLoadIn_clicked();
-    void on_btnLoadTrans_clicked();
+    void on_btnLoadTransDir_clicked();
+    void on_btnLoadTransFile_clicked();
 
 private:
     bool askSave();
     bool save();
     bool readInputFile(const QString &fn, QString &error);
-    bool readTranslationDir(const QString &dir, QStringList &errors);
+    bool readTranslationDir(QDir dir, QStringList &errors);
+    bool readTranslationFile(const QString &fn, QString &error);
+
+    IExcelHandler *createExcelHandler(const QString &fn);
 
 private:
     Ui::SieTransWnd *ui;
