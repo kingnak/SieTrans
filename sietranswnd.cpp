@@ -2,16 +2,24 @@
 #include "ui_sietranswnd.h"
 #include <QtWidgets>
 #include "fileexcelhandler.h"
+#include "translationmodel.h"
 
 SieTransWnd::SieTransWnd(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::SieTransWnd)
 {
     ui->setupUi(this);
-    clear();
+    m_translationModel = new TranslationModel(this);
+    m_translationFilterModel = new QSortFilterProxyModel(this);
+    m_translationFilterModel->setSourceModel(m_translationModel);
+    ui->tblTranslation->setModel(m_translationFilterModel);
 
-    ui->txtFilter->setVisible(false);
-    connect(ui->tblTranslation, &QTableWidget::itemChanged, [this](auto) {this->setWindowModified(true); });
+    ui->tblTranslation->setColumnWidth(2, 20);
+
+    clear();
+    connect(ui->txtFilter, &QLineEdit::textChanged, [this](auto v) {
+        m_translationFilterModel->setFilterFixedString(v);
+    });
 }
 
 SieTransWnd::~SieTransWnd()
@@ -23,7 +31,7 @@ void SieTransWnd::clear()
 {
     ui->txtFilter->clear();
     ui->lblCurFile->clear();
-    ui->tblTranslation->setRowCount(0);
+    m_translationModel->clear();
     setWindowModified(false);
     disableEdits();
 }
@@ -127,16 +135,7 @@ bool SieTransWnd::readInputFile(const QString &fn, QString &error)
     }
 
     auto cols = l.getColumns();
-
-    ui->tblTranslation->blockSignals(true);
-    for (auto c : cols) {
-        const int r = ui->tblTranslation->rowCount();
-        ui->tblTranslation->insertRow(r);
-        ui->tblTranslation->setItem(r, 0, new QTableWidgetItem(c.first));
-        ui->tblTranslation->setItem(r, 1, new QTableWidgetItem(c.second));
-        ui->tblTranslation->item(r, 0)->setFlags(ui->tblTranslation->item(r, 0)->flags() & ~Qt::ItemIsEditable);
-    }
-    ui->tblTranslation->blockSignals(false);
+    m_translationModel->setSourceData(cols);
 
     return true;
 }

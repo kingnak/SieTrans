@@ -4,6 +4,8 @@
 #include <QMainWindow>
 
 namespace Ui { class SieTransWnd; }
+class TranslationModel;
+class QSortFilterProxyModel;
 
 class SieTransWnd : public QMainWindow
 {
@@ -30,6 +32,7 @@ private:
 
 private:
     Ui::SieTransWnd *ui;
-
+    TranslationModel *m_translationModel;
+    QSortFilterProxyModel *m_translationFilterModel;
 };
 #endif // SIETRANSWND_H

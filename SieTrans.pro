@@ -20,7 +20,8 @@ SOURCES += \
     fileexcelhandler.cpp \
     main.cpp \
     odbcexcelhandler.cpp \
-    sietranswnd.cpp
+    sietranswnd.cpp \
+    translationmodel.cpp
 
 HEADERS += \
     BasicExcel.hpp \
@@ -28,7 +29,8 @@ HEADERS += \
     iexcelhandler.h \
     odbcexcelhandler.h \
     oleexcelloader.h \
-    sietranswnd.h
+    sietranswnd.h \
+    translationmodel.h
 
 FORMS += \
     sietranswnd.ui
