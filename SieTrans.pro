@@ -16,11 +16,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    BasicExcel.cpp \
+    fileexcelhandler.cpp \
     main.cpp \
     odbcexcelhandler.cpp \
     sietranswnd.cpp
 
 HEADERS += \
+    BasicExcel.hpp \
+    fileexcelhandler.h \
     iexcelhandler.h \
     odbcexcelhandler.h \
     oleexcelloader.h \

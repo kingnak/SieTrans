@@ -1,7 +1,7 @@
 #include "sietranswnd.h"
 #include "ui_sietranswnd.h"
 #include <QtWidgets>
-#include "odbcexcelhandler.h"
+#include "fileexcelhandler.h"
 
 SieTransWnd::SieTransWnd(QWidget *parent)
     : QMainWindow(parent)
@@ -120,7 +120,7 @@ bool SieTransWnd::readInputFile(const QString &fn, QString &error)
 {
     error.clear();
 
-    OdbcExcelHandler l;
+    FileExcelHandler l;
     if (!l.loadFile(fn)) {
         error = l.error();
         return false;
