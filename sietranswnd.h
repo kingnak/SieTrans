@@ -22,15 +22,20 @@ public slots:
     void enableEdits(bool enable = true);
     void disableEdits(bool disable = true) { enableEdits(!disable); }
 
+protected:
+    void closeEvent(QCloseEvent *e) override;
+
 private slots:
     void on_btnLoadIn_clicked();
     void on_btnLoadTransDir_clicked();
     void on_btnLoadTransFile_clicked();
+    void on_btnSave_clicked();
+    void on_btnSaveAs_clicked();
     void tableContextMenuRequested(const QPoint &p);
 
 private:
     bool askSave();
-    bool save();
+    bool save(const QString &fn = {});
     bool readInputFile(const QString &fn, QString &error);
     bool readTranslationDir(QDir dir, QStringList &errors);
     bool readTranslationFile(const QString &fn, QString &error);
@@ -41,5 +46,6 @@ private:
     Ui::SieTransWnd *ui;
     TranslationModel *m_translationModel;
     TranslationFilterModel *m_translationFilterModel;
+    QScopedPointer<IExcelHandler> m_fileHandler;
 };
 #endif // SIETRANSWND_H

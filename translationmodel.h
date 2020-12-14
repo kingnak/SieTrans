@@ -21,6 +21,7 @@ public:
     void clearTranslationData();
     void addTranslations(QList<IExcelHandler::ColumnData> translations);
     void applyTranslate();
+    QList<IExcelHandler::ColumnData> getTranslationData() const;
 
     enum TranslationState {
         NotTranslated,
@@ -35,6 +36,9 @@ public:
 
 public slots:
     void clear();
+
+signals:
+    void translationModified();
 
 private:
     struct Record {

@@ -100,6 +100,7 @@ bool TranslationModel::setData(const QModelIndex &index, const QVariant &value, 
 
     m_data[index.row()].data.second = value.toString();
     m_data[index.row()].translationState = (value.toString().isEmpty()) ? NotTranslated : Translated;
+    emit translationModified();
     return true;
 }
 
@@ -108,7 +109,10 @@ void TranslationModel::setSourceData(QList<IExcelHandler::ColumnData> data)
     beginResetModel();
     m_data.clear();
     for (auto d : data) {
-        m_data << Record{d,NotTranslated};
+        Record r{d,NotTranslated};
+        if (!d.first.isEmpty() && !d.second.isEmpty() && d.first != d.second)
+            r.translationState = Translated;
+        m_data << r;
     }
     endResetModel();
 }
@@ -144,7 +148,19 @@ void TranslationModel::applyTranslate()
             maxRow = r;
         }
     }
-    emit dataChanged(index(minRow, 1), index(maxRow, 2));
+    if (minRow >= 0) {
+        emit dataChanged(index(minRow, 1), index(maxRow, 2));
+        emit translationModified();
+    }
+}
+
+QList<IExcelHandler::ColumnData> TranslationModel::getTranslationData() const
+{
+    QList<IExcelHandler::ColumnData> ret;
+    for (auto c : m_data) {
+        ret << c.data;
+    }
+    return ret;
 }
 
 void TranslationModel::updateMultipleTranslationStates(QModelIndexList lst, TranslationModel::TranslationState state)

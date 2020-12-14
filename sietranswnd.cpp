@@ -37,6 +37,9 @@ SieTransWnd::SieTransWnd(QWidget *parent)
     connect(ui->chkFilterNotTranslated, &QCheckBox::toggled, [this](bool t) { m_translationFilterModel->filterNonTranslated(t); } );
 
     connect(ui->tblTranslation, &QWidget::customContextMenuRequested, this, &SieTransWnd::tableContextMenuRequested);
+
+    connect(m_translationModel, &TranslationModel::translationModified, this, [this]{ setWindowModified(true); } );
+
 }
 
 SieTransWnd::~SieTransWnd()
@@ -51,6 +54,7 @@ void SieTransWnd::clear()
     m_translationModel->clear();
     setWindowModified(false);
     disableEdits();
+    m_fileHandler.reset();
 }
 
 void SieTransWnd::enableEdits(bool enable)
@@ -65,6 +69,15 @@ void SieTransWnd::enableEdits(bool enable)
     ui->chkFilterTranslated->setEnabled(enable);
     ui->chkFilterProvisional->setEnabled(enable);
     ui->chkFilterNotTranslated->setEnabled(enable);
+}
+
+void SieTransWnd::closeEvent(QCloseEvent *e)
+{
+    if (!askSave()) {
+        e->ignore();
+        return;
+    }
+    QMainWindow::closeEvent(e);
 }
 
 void SieTransWnd::on_btnLoadIn_clicked()
@@ -117,6 +130,27 @@ void SieTransWnd::on_btnLoadTransFile_clicked()
         m_translationModel->applyTranslate();
         qApp->restoreOverrideCursor();
     }
+}
+
+void SieTransWnd::on_btnSave_clicked()
+{
+    save();
+}
+
+void SieTransWnd::on_btnSaveAs_clicked()
+{
+    if (!m_fileHandler) return;
+
+    QSettings s;
+    auto fn = QFileDialog::getSaveFileName(this, tr("Speichern als"), s.value("LastSaveDir").toString(), tr("Excel Dateien (*.xls)"));
+    if (fn.isNull()) {
+        return;
+    }
+
+    s.setValue("LastSaveDir", fn);
+    s.sync();
+
+    save(fn);
 }
 
 void SieTransWnd::tableContextMenuRequested(const QPoint &p)
@@ -188,7 +222,6 @@ bool SieTransWnd::askSave()
             return true;
         case QMessageBox::StandardButton::Yes:
             if (!save()) {
-                QMessageBox::critical(this, tr("Fehler"), tr("Fehler beim Speichern"));
                 return false;
             }
             return true;
@@ -200,8 +233,27 @@ bool SieTransWnd::askSave()
     return true;
 }
 
-bool SieTransWnd::save()
+bool SieTransWnd::save(const QString &fn)
 {
+    if (!m_fileHandler) return false;
+
+    qApp->setOverrideCursor(Qt::WaitCursor);
+    m_fileHandler->setColumns(m_translationModel->getTranslationData());
+    bool res = false;
+    if (fn.isNull()) {
+        res = m_fileHandler->save();
+    } else {
+        res = m_fileHandler->saveAs(fn);
+        ui->lblCurFile->setText(QDir::toNativeSeparators(fn));
+    }
+    qApp->restoreOverrideCursor();
+
+    if (!res) {
+        QMessageBox::critical(this, tr("Fehler"), tr("Fehler beim Speichern"));
+        return false;
+    }
+    setWindowModified(false);
+
     return true;
 }
 
@@ -218,6 +270,7 @@ bool SieTransWnd::readInputFile(const QString &fn, QString &error)
     auto cols = l->getColumns();
     m_translationModel->setSourceData(cols);
 
+    m_fileHandler.reset(l.take());
     return true;
 }
 
