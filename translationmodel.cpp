@@ -47,14 +47,25 @@ QVariant TranslationModel::data(const QModelIndex &idx, int role) const
     } else {
         switch (role) {
         case Qt::DisplayRole:
-            return d.translated ? "X" : "";
+            if (d.translationState == Translated)
+                return QChar(0x2713);
+            if (d.translationState == ProvisionalTranslation)
+                return "?";
+            return "";
         case Qt::BackgroundColorRole:
-            return QColor(d.translated ? Qt::darkGreen : Qt::transparent);
+            if (d.translationState == Translated)
+                return QColor(Qt::darkGreen);
+            if (d.translationState == ProvisionalTranslation)
+                return QColor(Qt::yellow);
+            return QColor(Qt::transparent);
+        case Qt::TextAlignmentRole:
+            return Qt::AlignCenter;
+        case TranslationStateRole:
+            return d.translationState;
         }
     }
 
     return {};
-    //return QAbstractTableModel::data(idx, role);
 }
 
 Qt::ItemFlags TranslationModel::flags(const QModelIndex &idx) const
@@ -72,15 +83,23 @@ bool TranslationModel::setData(const QModelIndex &index, const QVariant &value, 
             || index.column() == 0
             || index.row() < 0
             || index.row() >= m_data.size()
-            || role != Qt::EditRole
             ) {
+        return false;
+    }
+
+    if (index.column() == 2) {
+        if (role == TranslationStateRole) {
+            m_data[index.row()].translationState = static_cast<TranslationState> (value.toInt());
+            dataChanged(index, index);
+            return true;
+        }
         return false;
     }
 
     if (value.toString() == m_data[index.row()].data.second) return false;
 
     m_data[index.row()].data.second = value.toString();
-    m_data[index.row()].translated = true;
+    m_data[index.row()].translationState = (value.toString().isEmpty()) ? NotTranslated : Translated;
     return true;
 }
 
@@ -89,7 +108,7 @@ void TranslationModel::setSourceData(QList<IExcelHandler::ColumnData> data)
     beginResetModel();
     m_data.clear();
     for (auto d : data) {
-        m_data << Record{d,false};
+        m_data << Record{d,NotTranslated};
     }
     endResetModel();
 }
@@ -113,16 +132,33 @@ void TranslationModel::applyTranslate()
     int maxRow = -1;
     for (int r = 0; r < m_data.size(); ++r) {
         auto &c = m_data[r];
-        if (c.translated) continue;
+        if (c.translationState != NotTranslated) continue;
         auto it = m_trans.find(c.data.first);
         if (it != m_trans.end()) {
             c.data.second = *it;
-            c.translated = true;
+            if (c.data.second == c.data.first || c.data.second.isEmpty())
+                c.translationState = ProvisionalTranslation;
+            else
+                c.translationState = Translated;
             if (minRow < 0) minRow = r;
             maxRow = r;
         }
     }
     emit dataChanged(index(minRow, 1), index(maxRow, 2));
+}
+
+void TranslationModel::updateMultipleTranslationStates(QModelIndexList lst, TranslationModel::TranslationState state)
+{
+    int min = INT_MAX;
+    int max = -1;
+
+    for (auto idx : lst) {
+        if (idx.row() < min) min = idx.row();
+        if (idx.row() > max) max = idx.row();
+        setData(index(idx.row(), 2, idx.parent()), state, TranslationStateRole);
+    }
+
+    dataChanged(index(min, 2), index(max, 2));
 }
 
 void TranslationModel::clear()
@@ -131,4 +167,46 @@ void TranslationModel::clear()
     m_data.clear();
     m_trans.clear();
     endResetModel();
+}
+
+TranslationFilterModel::TranslationFilterModel(TranslationModel *source, QObject *parent)
+    : QSortFilterProxyModel(parent)
+{
+    setSourceModel(source);
+}
+
+bool TranslationFilterModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
+{
+    auto s1 = sourceModel()->data(sourceModel()->index(source_row, 0, source_parent)).toString();
+    auto s2 = sourceModel()->data(sourceModel()->index(source_row, 1, source_parent)).toString();
+    auto fl = sourceModel()->data(sourceModel()->index(source_row, 2, source_parent), TranslationModel::TranslationStateRole).toInt();
+
+    // Prevent that changes in state disappear immediately
+    if (!m_newChanges.contains(source_row)) {
+        if (fl == TranslationModel::Translated && !m_fTranslated) return false;
+        if (fl == TranslationModel::NotTranslated && !m_fNonTranslated) return false;
+        if (fl == TranslationModel::ProvisionalTranslation && !m_fProvisional) return false;
+    }
+
+    if (m_str.isEmpty()) return true;
+    if (!s1.contains(m_str, Qt::CaseInsensitive)) return false;
+    if (!s2.contains(m_str, Qt::CaseInsensitive)) return false;
+    return true;
+}
+
+void TranslationFilterModel::updateMultipleTranslationStates(QModelIndexList lst, TranslationModel::TranslationState state)
+{
+    for (auto &idx : lst) {
+        idx = mapToSource(idx);
+        m_newChanges << idx.row();
+    }
+    static_cast<TranslationModel*> (sourceModel())->updateMultipleTranslationStates(lst, state);
+}
+
+bool TranslationFilterModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    if (role == TranslationModel::TranslationStateRole) {
+        m_newChanges << mapToSource(index).row();
+    }
+    return QSortFilterProxyModel::setData(index, value, role);
 }

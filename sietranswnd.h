@@ -6,7 +6,7 @@
 
 namespace Ui { class SieTransWnd; }
 class TranslationModel;
-class QSortFilterProxyModel;
+class TranslationFilterModel;
 class IExcelHandler;
 
 class SieTransWnd : public QMainWindow
@@ -26,6 +26,7 @@ private slots:
     void on_btnLoadIn_clicked();
     void on_btnLoadTransDir_clicked();
     void on_btnLoadTransFile_clicked();
+    void tableContextMenuRequested(const QPoint &p);
 
 private:
     bool askSave();
@@ -39,6 +40,6 @@ private:
 private:
     Ui::SieTransWnd *ui;
     TranslationModel *m_translationModel;
-    QSortFilterProxyModel *m_translationFilterModel;
+    TranslationFilterModel *m_translationFilterModel;
 };
 #endif // SIETRANSWND_H

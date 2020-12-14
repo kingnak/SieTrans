@@ -10,16 +10,33 @@ SieTransWnd::SieTransWnd(QWidget *parent)
 {
     ui->setupUi(this);
     m_translationModel = new TranslationModel(this);
-    m_translationFilterModel = new QSortFilterProxyModel(this);
-    m_translationFilterModel->setSourceModel(m_translationModel);
+    m_translationFilterModel = new TranslationFilterModel(m_translationModel, this);
     ui->tblTranslation->setModel(m_translationFilterModel);
 
+    ui->tblTranslation->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->tblTranslation->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    ui->tblTranslation->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
     ui->tblTranslation->setColumnWidth(2, 20);
+
+    ui->tblTranslation->setContextMenuPolicy(Qt::CustomContextMenu);
 
     clear();
     connect(ui->txtFilter, &QLineEdit::textChanged, [this](auto v) {
-        m_translationFilterModel->setFilterFixedString(v);
+        m_translationFilterModel->setFilterString(v);
     });
+
+    connect(ui->tblTranslation, &QAbstractItemView::doubleClicked, [this](auto idx) {
+        if (idx.column() != 2) return;
+        auto s = m_translationFilterModel->data(idx, TranslationModel::TranslationStateRole).toInt();
+        s = (s+1)%3;
+        m_translationFilterModel->setData(idx, s, TranslationModel::TranslationStateRole);
+    });
+
+    connect(ui->chkFilterTranslated, &QCheckBox::toggled, [this](bool t) { m_translationFilterModel->filterTranslated(t); } );
+    connect(ui->chkFilterProvisional, &QCheckBox::toggled, [this](bool t) { m_translationFilterModel->filterProvisional(t); } );
+    connect(ui->chkFilterNotTranslated, &QCheckBox::toggled, [this](bool t) { m_translationFilterModel->filterNonTranslated(t); } );
+
+    connect(ui->tblTranslation, &QWidget::customContextMenuRequested, this, &SieTransWnd::tableContextMenuRequested);
 }
 
 SieTransWnd::~SieTransWnd()
@@ -45,6 +62,9 @@ void SieTransWnd::enableEdits(bool enable)
     ui->tblTranslation->setEnabled(enable);
     ui->btnLoadTransDir->setEnabled(enable);
     ui->btnLoadTransFile->setEnabled(enable);
+    ui->chkFilterTranslated->setEnabled(enable);
+    ui->chkFilterProvisional->setEnabled(enable);
+    ui->chkFilterNotTranslated->setEnabled(enable);
 }
 
 void SieTransWnd::on_btnLoadIn_clicked()
@@ -96,6 +116,35 @@ void SieTransWnd::on_btnLoadTransFile_clicked()
     } else {
         m_translationModel->applyTranslate();
         qApp->restoreOverrideCursor();
+    }
+}
+
+void SieTransWnd::tableContextMenuRequested(const QPoint &p)
+{
+    auto idx = ui->tblTranslation->indexAt(p);
+    if (!idx.isValid()) return;
+
+    auto m = new QMenu;
+    auto acts = QList<QAction*>()
+        << new QAction(tr("Nicht übersetzt (X)"), m)
+        << new QAction(tr("Übersetzt (%1)").arg(QChar(0x2713)), m)
+        << new QAction(tr("Evlt. übersetzt (?)"), m);
+
+    m->addAction(acts[0]);
+    m->addAction(acts[1]);
+    m->addAction(acts[2]);
+    auto a = m->exec(ui->tblTranslation->mapToGlobal(p));
+    m->deleteLater();
+
+    if (!a) return;
+
+    auto sel = ui->tblTranslation->selectionModel()->selectedIndexes();
+    if (a == acts[0]) {
+        m_translationFilterModel->updateMultipleTranslationStates(sel, TranslationModel::NotTranslated);
+    } else if (a == acts[1]) {
+        m_translationFilterModel->updateMultipleTranslationStates(sel, TranslationModel::Translated);
+    } else if (a == acts[2]) {
+        m_translationFilterModel->updateMultipleTranslationStates(sel, TranslationModel::ProvisionalTranslation);
     }
 }
 
