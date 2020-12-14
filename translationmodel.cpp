@@ -54,9 +54,9 @@ QVariant TranslationModel::data(const QModelIndex &idx, int role) const
             return "";
         case Qt::BackgroundColorRole:
             if (d.translationState == Translated)
-                return QColor(Qt::darkGreen);
+                return QColor(qRgb(50, 205, 50));
             if (d.translationState == ProvisionalTranslation)
-                return QColor(Qt::yellow);
+                return QColor(qRgb(240, 230, 140));
             return QColor(Qt::transparent);
         case Qt::TextAlignmentRole:
             return Qt::AlignCenter;
