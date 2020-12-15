@@ -8,6 +8,7 @@ namespace Ui { class SieTransWnd; }
 class TranslationModel;
 class TranslationFilterModel;
 class IExcelHandler;
+class QLabel;
 
 class SieTransWnd : public QMainWindow
 {
@@ -21,6 +22,7 @@ public slots:
     void clear();
     void enableEdits(bool enable = true);
     void disableEdits(bool disable = true) { enableEdits(!disable); }
+    void updateTranslationStatus();
 
 protected:
     void closeEvent(QCloseEvent *e) override;
@@ -48,5 +50,6 @@ private:
     TranslationModel *m_translationModel;
     TranslationFilterModel *m_translationFilterModel;
     QScopedPointer<IExcelHandler> m_fileHandler;
+    QLabel *m_statusLabel;
 };
 #endif // SIETRANSWND_H

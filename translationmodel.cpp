@@ -90,7 +90,8 @@ bool TranslationModel::setData(const QModelIndex &index, const QVariant &value, 
     if (index.column() == 2) {
         if (role == TranslationStateRole) {
             m_data[index.row()].translationState = static_cast<TranslationState> (value.toInt());
-            dataChanged(index, index);
+            emit dataChanged(index, index);
+            emit translationStateModified();
             return true;
         }
         return false;
@@ -101,6 +102,7 @@ bool TranslationModel::setData(const QModelIndex &index, const QVariant &value, 
     m_data[index.row()].data.second = value.toString();
     m_data[index.row()].translationState = (value.toString().isEmpty()) ? NotTranslated : Translated;
     emit translationModified();
+    emit translationStateModified();
     return true;
 }
 
@@ -151,6 +153,7 @@ void TranslationModel::applyTranslate()
     if (minRow >= 0) {
         emit dataChanged(index(minRow, 1), index(maxRow, 2));
         emit translationModified();
+        emit translationStateModified();
     }
 }
 
@@ -160,6 +163,14 @@ QList<IExcelHandler::ColumnData> TranslationModel::getTranslationData() const
     for (auto c : m_data) {
         ret << c.data;
     }
+    return ret;
+}
+
+QMap<TranslationModel::TranslationState, int> TranslationModel::getTranlationStateCounts() const
+{
+    QMap<TranslationModel::TranslationState, int> ret;
+    for (auto c : m_data)
+        ret[c.translationState]++;
     return ret;
 }
 
@@ -184,7 +195,8 @@ void TranslationModel::updateMultipleTranslationStates(QModelIndexList lst, Tran
         setData(index(idx.row(), 2, idx.parent()), state, TranslationStateRole);
     }
 
-    dataChanged(index(min, 2), index(max, 2));
+    emit dataChanged(index(min, 2), index(max, 2));
+    emit translationStateModified();
 }
 
 void TranslationModel::clear()

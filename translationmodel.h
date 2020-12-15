@@ -31,6 +31,8 @@ public:
     QList<IExcelHandler::ColumnData> getTranslationData(QSet<TranslationState> states) const;
     void updateMultipleTranslationStates(QModelIndexList lst, TranslationState state);
 
+    QMap<TranslationState, int> getTranlationStateCounts() const;
+
     enum {
         TranslationStateRole = Qt::UserRole
     };
@@ -40,6 +42,7 @@ public slots:
 
 signals:
     void translationModified();
+    void translationStateModified();
 
 private:
     struct Record {

@@ -9,6 +9,9 @@ SieTransWnd::SieTransWnd(QWidget *parent)
     , ui(new Ui::SieTransWnd)
 {
     ui->setupUi(this);
+    m_statusLabel = new QLabel(this);
+    statusBar()->addPermanentWidget(m_statusLabel);
+
     m_translationModel = new TranslationModel(this);
     m_translationFilterModel = new TranslationFilterModel(m_translationModel, this);
     ui->tblTranslation->setModel(m_translationFilterModel);
@@ -39,7 +42,7 @@ SieTransWnd::SieTransWnd(QWidget *parent)
     connect(ui->tblTranslation, &QWidget::customContextMenuRequested, this, &SieTransWnd::tableContextMenuRequested);
 
     connect(m_translationModel, &TranslationModel::translationModified, this, [this]{ setWindowModified(true); } );
-
+    connect(m_translationModel, &TranslationModel::translationStateModified, this, &SieTransWnd::updateTranslationStatus);
 }
 
 SieTransWnd::~SieTransWnd()
@@ -55,6 +58,7 @@ void SieTransWnd::clear()
     setWindowModified(false);
     disableEdits();
     m_fileHandler.reset();
+    m_statusLabel->setText(tr("Keine Datei geladen"));
 }
 
 void SieTransWnd::enableEdits(bool enable)
@@ -69,6 +73,18 @@ void SieTransWnd::enableEdits(bool enable)
     ui->chkFilterTranslated->setEnabled(enable);
     ui->chkFilterProvisional->setEnabled(enable);
     ui->chkFilterNotTranslated->setEnabled(enable);
+}
+
+void SieTransWnd::updateTranslationStatus()
+{
+    auto cts = m_translationModel->getTranlationStateCounts();
+    auto str = tr("Übersetzt: %1 / Nicht Übersetzt: %2 / Evtl. Übersetzt: %3")
+            .arg(cts[TranslationModel::TranslationState::Translated])
+            .arg(cts[TranslationModel::TranslationState::NotTranslated])
+            .arg(cts[TranslationModel::TranslationState::ProvisionalTranslation])
+            ;
+
+    m_statusLabel->setText(str);
 }
 
 void SieTransWnd::closeEvent(QCloseEvent *e)
@@ -106,6 +122,8 @@ void SieTransWnd::on_btnLoadIn_clicked()
 
     ui->lblCurFile->setText(QDir::toNativeSeparators(fi.absoluteFilePath()));
     enableEdits();
+    updateTranslationStatus();
+    statusBar()->showMessage(tr("%1 erfolgreich geladen").arg(QDir::toNativeSeparators(fn)), 2000);
 }
 
 void SieTransWnd::on_btnLoadTransFile_clicked()
@@ -129,12 +147,14 @@ void SieTransWnd::on_btnLoadTransFile_clicked()
     } else {
         m_translationModel->applyTranslate();
         qApp->restoreOverrideCursor();
+        statusBar()->showMessage(tr("Übersetzungen aus %1 erfolgreich geladen").arg(QDir::toNativeSeparators(fn)), 2000);
     }
 }
 
 void SieTransWnd::on_btnSave_clicked()
 {
-    save();
+    if (save())
+        statusBar()->showMessage(tr("Erfolgreich gespeichert"), 2000);
 }
 
 void SieTransWnd::on_btnSaveAs_clicked()
@@ -150,7 +170,8 @@ void SieTransWnd::on_btnSaveAs_clicked()
     s.setValue("LastSaveDir", fn);
     s.sync();
 
-    save(fn);
+    if (save(fn))
+        statusBar()->showMessage(tr("%1 erfolgreich gespeichert").arg(QDir::toNativeSeparators(fn)), 2000);
 }
 
 void SieTransWnd::on_btnExportUntranslated_clicked()
@@ -184,6 +205,8 @@ void SieTransWnd::on_btnExportUntranslated_clicked()
 
     if (!res) {
         QMessageBox::critical(this, tr("Fehler"), tr("Fehler beim Speichern"));
+    } else {
+        statusBar()->showMessage(tr("%1 erfolgreich exportiert").arg(QDir::toNativeSeparators(fn)), 2000);
     }
 }
 
@@ -242,6 +265,8 @@ void SieTransWnd::on_btnLoadTransDir_clicked()
                       QMessageBox::StandardButton::Ok,
                       this);
         m.exec();
+    } else {
+        statusBar()->showMessage(tr("Übersetzungen aus %1 erfolgreich geladen").arg(QDir::toNativeSeparators(fn)), 2000);
     }
 }
 
