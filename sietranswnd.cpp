@@ -153,6 +153,40 @@ void SieTransWnd::on_btnSaveAs_clicked()
     save(fn);
 }
 
+void SieTransWnd::on_btnExportUntranslated_clicked()
+{
+    if (!m_fileHandler) return;
+
+    auto opts = QStringList() << tr("Nur fehlende Übersetzungen") << tr("Mit evtl. Übersetzungen");
+    bool ok = false;
+    auto sel = QInputDialog::getItem(this, tr("Exportieren"), tr("Export-Modus wählen"), opts, 0, false, &ok);
+
+    if (!ok) return;
+
+    QSet<TranslationModel::TranslationState> states;
+    states << TranslationModel::TranslationState::NotTranslated;
+    if (opts.indexOf(sel) == 1)
+        states << TranslationModel::TranslationState::ProvisionalTranslation;
+
+    QSettings s;
+    QString fn = QFileDialog::getSaveFileName(this, tr("Exportieren"), s.value("LastExportDir").toString(), tr("Excel Dateien (*.xls)"));
+    if (fn.isEmpty()) return;
+    s.setValue("LastExportDir", fn);
+    s.sync();
+
+    qApp->setOverrideCursor(Qt::WaitCursor);
+    QScopedPointer<IExcelHandler> e(createExcelHandler(fn));
+    e->newFile(fn, m_fileHandler->getSheetName());
+    auto data = m_translationModel->getTranslationData(states);
+    e->setColumns(data);
+    bool res = e->save();
+    qApp->restoreOverrideCursor();
+
+    if (!res) {
+        QMessageBox::critical(this, tr("Fehler"), tr("Fehler beim Speichern"));
+    }
+}
+
 void SieTransWnd::tableContextMenuRequested(const QPoint &p)
 {
     auto idx = ui->tblTranslation->indexAt(p);

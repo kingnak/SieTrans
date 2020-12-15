@@ -10,7 +10,9 @@ class FileExcelHandler : public IExcelHandler
 public:
     FileExcelHandler();
 
+    bool newFile(const QString &filename, const QString &sheetName) override;
     bool loadFile(const QString &filename) override;
+    QString getSheetName() const override;
     void resetColumns() override;
     QList<ColumnData> getColumns() override;
     void setColumns(QList<ColumnData> cols) override;
@@ -26,6 +28,7 @@ private:
     QString m_error;
     QList<ColumnData> m_cols;
     QScopedPointer<YExcel::BasicExcel> m_excel;
+    QString m_newFileName;
 };
 
 #endif // FILEEXCELHANDLER_H

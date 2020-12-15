@@ -31,6 +31,7 @@ private slots:
     void on_btnLoadTransFile_clicked();
     void on_btnSave_clicked();
     void on_btnSaveAs_clicked();
+    void on_btnExportUntranslated_clicked();
     void tableContextMenuRequested(const QPoint &p);
 
 private:

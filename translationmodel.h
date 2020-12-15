@@ -10,6 +10,12 @@ class TranslationModel : public QAbstractTableModel
 public:
     TranslationModel(QObject *parent = nullptr);
 
+    enum TranslationState {
+        NotTranslated,
+        ProvisionalTranslation,
+        Translated,
+    };
+
     int rowCount(const QModelIndex &idx) const override;
     int columnCount(const QModelIndex &idx) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -22,12 +28,7 @@ public:
     void addTranslations(QList<IExcelHandler::ColumnData> translations);
     void applyTranslate();
     QList<IExcelHandler::ColumnData> getTranslationData() const;
-
-    enum TranslationState {
-        NotTranslated,
-        ProvisionalTranslation,
-        Translated,
-    };
+    QList<IExcelHandler::ColumnData> getTranslationData(QSet<TranslationState> states) const;
     void updateMultipleTranslationStates(QModelIndexList lst, TranslationState state);
 
     enum {

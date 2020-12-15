@@ -7,8 +7,17 @@ FileExcelHandler::FileExcelHandler()
 
 }
 
+bool FileExcelHandler::newFile(const QString &filename, const QString &sheetName)
+{
+    m_newFileName = filename;
+    m_excel.reset(new YExcel::BasicExcel());
+    m_excel->New(1);
+    return m_excel->GetWorksheet(size_t(0))->Rename(sheetName.toLocal8Bit());
+}
+
 bool FileExcelHandler::loadFile(const QString &filename)
 {
+    m_newFileName.clear();
     m_cols.clear();
 
     QScopedPointer<YExcel::BasicExcel> b(new YExcel::BasicExcel);
@@ -22,6 +31,11 @@ bool FileExcelHandler::loadFile(const QString &filename)
 
     m_excel.reset(b.take());
     return true;
+}
+
+QString FileExcelHandler::getSheetName() const
+{
+    return QString::fromLocal8Bit(m_excel->GetAnsiSheetName(0));
 }
 
 void FileExcelHandler::resetColumns()
@@ -53,11 +67,19 @@ bool FileExcelHandler::saveAs(const QString &filename)
 {
     if (!m_excel) return false;
     writeExcel();
-    return m_excel->SaveAs(QDir::toNativeSeparators(filename).toLocal8Bit());
+    if (m_excel->SaveAs(QDir::toNativeSeparators(filename).toLocal8Bit())) {
+        m_newFileName.clear();
+        return true;
+    }
+    return false;
 }
 
 bool FileExcelHandler::save()
 {
+    if (!m_newFileName.isEmpty()) {
+        return saveAs(m_newFileName);
+    }
+
     if (!m_excel) return false;
     writeExcel();
     return m_excel->Save();

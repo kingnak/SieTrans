@@ -163,6 +163,16 @@ QList<IExcelHandler::ColumnData> TranslationModel::getTranslationData() const
     return ret;
 }
 
+QList<IExcelHandler::ColumnData> TranslationModel::getTranslationData(QSet<TranslationState> states) const
+{
+    QList<IExcelHandler::ColumnData> ret;
+    for (auto c : m_data) {
+        if (states.contains(c.translationState))
+            ret << c.data;
+    }
+    return ret;
+}
+
 void TranslationModel::updateMultipleTranslationStates(QModelIndexList lst, TranslationModel::TranslationState state)
 {
     int min = INT_MAX;

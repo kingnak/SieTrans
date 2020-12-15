@@ -12,7 +12,9 @@ public:
     IExcelHandler() = default;
     virtual ~IExcelHandler() = default;
 
+    virtual bool newFile(const QString &filename, const QString &sheetName) = 0;
     virtual bool loadFile(const QString &filename) = 0;
+    virtual QString getSheetName() const = 0;
     virtual void resetColumns() = 0;
     virtual QList<ColumnData> getColumns() = 0;
     virtual void setColumns(QList<ColumnData> cols) = 0;
