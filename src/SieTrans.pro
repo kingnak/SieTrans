@@ -28,7 +28,6 @@ HEADERS += \
     fileexcelhandler.h \
     iexcelhandler.h \
     odbcexcelhandler.h \
-    oleexcelloader.h \
     sietranswnd.h \
     translationmodel.h
 
