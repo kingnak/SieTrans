@@ -1,4 +1,4 @@
-QT       += core gui sql
+QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -19,7 +19,6 @@ SOURCES += \
     BasicExcel.cpp \
     fileexcelhandler.cpp \
     main.cpp \
-    odbcexcelhandler.cpp \
     sietranswnd.cpp \
     translationmodel.cpp
 
@@ -27,7 +26,6 @@ HEADERS += \
     BasicExcel.hpp \
     fileexcelhandler.h \
     iexcelhandler.h \
-    odbcexcelhandler.h \
     sietranswnd.h \
     translationmodel.h
 

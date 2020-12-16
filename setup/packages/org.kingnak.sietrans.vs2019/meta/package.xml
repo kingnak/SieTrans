@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<Package> 
+    <DisplayName>VS2019 CRT</DisplayName> 
+    <Description>Required VS 2019 runtime</Description> 
+    <Version>14.16.27012</Version> 
+    <ReleaseDate>2019-01-01</ReleaseDate> 
+	<Name>org.kingnak.sietrans.vs2019</Name> 
+	<Virtual>true</Virtual>
+	<ForcedInstallation>true</ForcedInstallation>
+</Package>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<Installer> 
+	<Name>SieTrans</Name> 
+	<Version>0.7.0</Version> 
+	<Title>SieTrans 0.7.0 Installer</Title> 
+	<Publisher>King Nak</Publisher> 
+	<StartMenuDir>SieTrans</StartMenuDir> 
+	<TargetDir>C:/Program Files/SieTrans</TargetDir> 
+	<AllowSpaceInPath>true</AllowSpaceInPath> 
+	<MaintenanceToolName>SieTransUninstaller</MaintenanceToolName>
+</Installer>

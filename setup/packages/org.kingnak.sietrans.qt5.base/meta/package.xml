@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<Package> 
+    <DisplayName>Qt5 base</DisplayName> 
+    <Description>Required Qt5 base libraries</Description> 
+    <Version>5.9.0</Version> 
+    <ReleaseDate>2017-01-01</ReleaseDate> 
+	<Name>org.kingnak.sietrans.qt5.base</Name> 
+	<Virtual>true</Virtual>
+</Package>

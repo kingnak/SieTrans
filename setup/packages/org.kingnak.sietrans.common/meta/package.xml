@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<Package> 
+    <DisplayName>SieTrans</DisplayName> 
+    <Description>Translation tool for Siemens</Description> 
+    <Version>0.7.0</Version> 
+    <ReleaseDate>2020-12-19</ReleaseDate> 
+	<Name>org.kingnak.sietrans.common</Name>
+	<Default>true</Default>
+	<ForcedInstallation>true</ForcedInstallation>
+	<Essential>true</Essential>
+	<Dependencies>org.kingnak.sietrans.qt5.base,org.kingnak.sietrans.vs2019</Dependencies> 
+	<Script>installscript.qs</Script> 
+</Package>
