@@ -4893,6 +4893,12 @@ size_t BasicExcel::Read(const char* data, size_t dataSize)
 		if (bytesRead < dataSize) LittleEndian::Read(data, code, bytesRead, 2);
 		else break;
 	} 
+
+    if (worksheets_.empty() && ! workbook_.boundSheets_.empty()) {
+        worksheets_.push_back(Worksheet());
+        worksheets_.back().Read(data+workbook_.boundSheets_[0].BOFpos_);
+    }
+
 	return bytesRead;
 }
 
